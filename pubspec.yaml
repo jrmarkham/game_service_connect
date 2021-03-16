@@ -1,0 +1,26 @@
+name: game_service_connect
+description: A wrapper for iOS Game Center and Google Play Games Services including
+  auth and player info, leaderboard and achievements.
+version: 0.0.1
+homepage: https://github.com/jrmarkham/game_service_connect
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+  flutter: ">=1.20.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: plugin.markhamenterprises.game_service_connect
+        pluginClass: GameServiceConnectPlugin
+      ios:
+        pluginClass: GameServiceConnectPlugin
