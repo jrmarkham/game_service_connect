@@ -64,7 +64,7 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
       pendingOperation = PendingOperation(Methods.silentSignIn, result)
       if (task.isSuccessful) {
         val googleSignInAccount = task.result
-        handleSignInResult(googleSignInAccount!!)
+        handleSignInResult(googleSignInAccount!!, result)
       } else {
         Log.e("Error", "signInError", task.exception)
         Log.i("ExplicitSignIn", "Trying explicit sign in")
@@ -81,7 +81,8 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
     activity.startActivityForResult(googleSignInClient?.signInIntent, RC_SIGN_IN)
   }
 
-  private fun handleSignInResult(googleSignInAccount: GoogleSignInAccount) {
+  private fun handleSignInResult(googleSignInAccount: GoogleSignInAccount,
+                                 result: Result) {
     achievementClient = Games.getAchievementsClient(activity!!, googleSignInAccount)
     leaderboardsClient = Games.getLeaderboardsClient(activity!!, googleSignInAccount)
     val playersClient = Games.getPlayersClient(activity!!, googleSignInAccount)
@@ -90,22 +91,16 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
       displayName = innerTask.displayName
     }
 
+
+    val successMap: Map<String, String> = HashMap()
+      successMap.put("response", "success")
+      successMap.put("message", "player connect to game center")
+      successMap.put("id", playerID)
+      successMap.put("displayName", displayName)
+    result(successMap)
+
     finishPendingOperationWithSuccess()
   }
-//
-//  private fun signInResult(result: Result) {
-////
-////    ["response" :"SUCCESS","message":"player connect to game center", "id":playerID,
-////    "displayName": player.displayName]
-//
-//result(              mapOf<String, String>("response" to "SUCCESS",
-//                      "message" to "player connect to google games center",
-//                      "id" to playerID, "displayName" to displayName);
-//
-//
-//
-//
-//  }
 
   private fun showAchievements(result: Result) {
     showLoginErrorIfNotLoggedIn(result)
@@ -218,34 +213,6 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
     pendingOperation = null
   }
 
-  /*
-               let results:[String: Any] = ["response" :"SUCCESS","message":"player connect to game center", "id":playerID,
-             "displayName": player.displayName]
-
-            result(results)
-          } else {
-             let error:[String: Any] = ["response" : "ERROR_NOT_SIGN_IN", "message":"player auth failed"]
-
-                         @Override
-            public void onSuccess(Player player) {
-                Map<String, Object> successMap = new HashMap<>();
-                successMap.put("type", "SUCCESS");
-                successMap.put("id", player.getPlayerId());
-                successMap.put("email", currentAccount.getEmail());
-                successMap.put("displayName", player.getDisplayName());
-
-                result(successMap);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(Exception e) {
-                error("ERROR_FETCH_PLAYER_PROFILE", e);
-
-
-   */
-
-
-
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
     if (requestCode == RC_SIGN_IN) {
       val result = Auth.GoogleSignInApi.getSignInResultFromIntent(data)
@@ -293,12 +260,6 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
 
 
       Methods.getSignIn -> {
-
-
-
-        //               let results:[String: Any] = ["response" :"SUCCESS","message":"player connect to game center", "id":playerID,
-        //             "displayName": player.displayName]
-
         silentSignIn(result)
       }
       else -> result.notImplemented()
