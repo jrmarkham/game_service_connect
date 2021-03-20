@@ -2,8 +2,7 @@ import Flutter
 import UIKit
 import GameKit
 
-
-
+private let CHANNEL_NAME = "plugin.markhamenterprises/game_service_connect"
 
 public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
 // view controller
@@ -11,35 +10,25 @@ public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
     return UIApplication.shared.keyWindow!.rootViewController!
   }
 
-
-private let CHANNEL_NAME = "plugin.markhamenterprises/game_service_connect"
-private struct Methods {
-  let getSignIn = "getSignIn"
-  let showLeaderboard = "showLeaderboard"
-  let submitScore = "submitScore"
-  let showAchievements = "showAchievements"
-  let unlockAchievement =  "unlockAchievement"
-  let setPercentAchievement = "setPercentAchievement"
-}
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
-            case Methods.getSignIn:
+            case "getSignIn":
                 signInUser(result:result)
-            case Methods.showLeaderboard:
+            case "showLeaderboard":
                 let args = call.arguments as! [String:String]
                 let id = args ["id"]!
                  showLeaderboard(id:id,result:result)
-            case Methods.submitScore:
+            case "submitScore":
                 let args = call.arguments as! [String:Any]
                  let id = args ["id"] as! String
                  let score = args["score"] as! Int64
                  submitScore(id:id, score:score, result:result )
-            case Methods.showAchievements:showAchievements(result:result)
-            case Methods.unlockAchievement:
+            case "showAchievements":showAchievements(result:result)
+            case "unlockAchievement":
                 let args = call.arguments as! [String:String]
                 let id = args ["id"]!
                  unlockAchievement(id:id, result:result)
-            case Methods.setPercentAchievement:
+            case "setPercentAchievement":
                 let args = call.arguments as! [String:Any]
                 let id = args ["id"] as! String
                 let percent = args ["percent"] as! Double
