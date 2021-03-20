@@ -3,7 +3,16 @@ import UIKit
 import GameKit
 
 
-private let CHANNEL_NAME = "plugin.markhamenterprises/game_service_connect" as! [String:String]
+
+
+public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
+// view controller
+  var viewController: UIViewController {
+    return UIApplication.shared.keyWindow!.rootViewController!
+  }
+
+  
+private let CHANNEL_NAME = "plugin.markhamenterprises/game_service_connect" as! String
 private struct Methods {
   let getSignIn = "getSignIn" as! String
   let showLeaderboard = "showLeaderboard" as! String
@@ -12,13 +21,6 @@ private struct Methods {
   let unlockAchievement =  "unlockAchievement" as! String
   let setPercentAchievement = "setPercentAchievement"as! String
 }
-
-public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
-// view controller
-  var viewController: UIViewController {
-    return UIApplication.shared.keyWindow!.rootViewController!
-  }
-
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
             case Methods.getSignIn:
