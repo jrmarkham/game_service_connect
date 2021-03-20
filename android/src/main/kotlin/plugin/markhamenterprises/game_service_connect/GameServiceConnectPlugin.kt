@@ -42,6 +42,15 @@ class GameServiceConnectPlugin: FlutterPlugin, MethodCallHandler {
   /// when the Flutter Engine is detached from the Activity
   private lateinit var channel : MethodChannel
 
+  private var googleSignInClient: GoogleSignInClient? = null
+  private var achievementClient: AchievementsClient? = null
+  private var leaderboardsClient: LeaderboardsClient? = null
+  private var playerID: String? = null
+  private var displayName: String? = null
+  private var activityPluginBinding: ActivityPluginBinding? = null
+  private var channel: MethodChannel? = null
+  private var pendingOperation: PendingOperation? = null
+
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
     channel.setMethodCallHandler(this)
@@ -51,36 +60,36 @@ class GameServiceConnectPlugin: FlutterPlugin, MethodCallHandler {
     when (call.method) {
 
       Methods.submitScore -> {
-        result.success("Android ${call.method}")
+        result.success("Android ${android.os.Build.VERSION.RELEASE}")
 //        val leaderboardID = call.argument<String>("leaderboardID") ?: ""
 //        val score = call.argument<Int>("value") ?: 0
 //        submitScore(leaderboardID, score, result)
       }
 
       Methods.showLeaderboard -> {
-        result.success("Android ${call.method}")
+        result.success("Android ${android.os.Build.VERSION.RELEASE}")
 //        showLeaderboards(result)
       }
       Methods.showAchievements -> {
-        result.success("Android ${call.method}")
+        result.success("Android ${android.os.Build.VERSION.RELEASE}")
 //        showAchievements(result)
       }
 
       Methods.setPercentAchievement -> {
-        result.success("Android ${call.method}")
+        result.success("Android ${android.os.Build.VERSION.RELEASE}")
 //        val achievementId = call.argument<String>("id") ?: ""
 //        val percent = call.argument<Int>("percent") ?: 0
 //        increment(achievementId, percent, result)
       }
 
       Methods.unlockAchievement -> {
-        result.success("Android ${call.method}")
+        result.success("Android ${android.os.Build.VERSION.RELEASE}")
 //        unlock(call.argument<String>("id") ?: "", result)
       }
 
 
       Methods.getSignIn -> {
-        result.success("Android ${call.method}")
+        result.success("Android ${android.os.Build.VERSION.RELEASE}")
 
       //      silentSignIn(result)
       }
