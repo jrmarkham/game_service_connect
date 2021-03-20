@@ -11,15 +11,15 @@ public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
     return UIApplication.shared.keyWindow!.rootViewController!
   }
 
-  
-private let CHANNEL_NAME = "plugin.markhamenterprises/game_service_connect" as! String
+
+private let CHANNEL_NAME = "plugin.markhamenterprises/game_service_connect"
 private struct Methods {
-  let getSignIn = "getSignIn" as! String
-  let showLeaderboard = "showLeaderboard" as! String
-  let submitScore = "submitScore" as! String
-  let showAchievements = "showAchievements" as! String
-  let unlockAchievement =  "unlockAchievement" as! String
-  let setPercentAchievement = "setPercentAchievement"as! String
+  let getSignIn = "getSignIn"
+  let showLeaderboard = "showLeaderboard"
+  let submitScore = "submitScore"
+  let showAchievements = "showAchievements"
+  let unlockAchievement =  "unlockAchievement"
+  let setPercentAchievement = "setPercentAchievement"
 }
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
