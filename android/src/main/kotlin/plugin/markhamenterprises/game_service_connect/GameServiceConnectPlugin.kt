@@ -1,6 +1,5 @@
 package plugin.markhamenterprises.game_service_connect
 
-import androidx.annotation.NonNull
 import android.app.Activity
 import android.content.Intent
 import android.util.Log
@@ -13,11 +12,15 @@ import com.google.android.gms.games.AchievementsClient
 import com.google.android.gms.games.Games
 import com.google.android.gms.games.LeaderboardsClient
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.PluginRegistry.Registrar
+import io.flutter.plugin.common.PluginRegistry
+import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 
 
 private const val CHANNEL_NAME = "plugin.markhamenterprises/game_service_connect"
