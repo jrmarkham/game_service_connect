@@ -5,12 +5,12 @@ import GameKit
 
 private let CHANNEL_NAME = "plugin.markhamenterprises/game_service_connect" as! [String:String]
 private struct Methods {
-  let getSignIn = "getSignIn"as! [String:String]
-  let showLeaderboard = "showLeaderboard"as! [String:String]
-  let submitScore = "submitScore"as! [String:String]
-  let showAchievements = "showAchievements"as! [String:String]
-  let unlockAchievement =  "unlockAchievement"as! [String:String]
-  let setPercentAchievement = "setPercentAchievement"as! [String:String]
+  let getSignIn = "getSignIn" as! String
+  let showLeaderboard = "showLeaderboard" as! String
+  let submitScore = "submitScore" as! String
+  let showAchievements = "showAchievements" as! String
+  let unlockAchievement =  "unlockAchievement" as! String
+  let setPercentAchievement = "setPercentAchievement"as! String
 }
 
 public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
