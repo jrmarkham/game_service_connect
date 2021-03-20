@@ -6,3 +6,5 @@
 * Swift type fix.
 ## 0.0.4
 * More Swift fixes.
+## 0.0.5
+* Kotlin fixes.
