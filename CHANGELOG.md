@@ -8,3 +8,5 @@
 * More Swift fixes.
 ## 0.0.5
 * Kotlin fixes.
+## 0.0.6
+* More Swift fixes.
