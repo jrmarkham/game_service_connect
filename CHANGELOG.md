@@ -12,3 +12,5 @@
 * More Swift fixes.
 ## 0.0.7
 * Kotlin stubs.
+## 0.0.8
+* Kotlin stubs fixes.

@@ -3,6 +3,25 @@ import UIKit
 import GameKit
 
 private let CHANNEL_NAME = "plugin.markhamenterprises/game_service_connect"
+private let RESPONSE = "response";
+private let SUCCESS = "success";
+private let ERROR = "error";
+private let UNIMPLEMENTED = "unimplemented";
+private let MESSAGE = "message";
+private let ID = "id";
+private let DISPLAY_NAME = "displayName";
+private let SCORE = "score";
+private let PERCENT = "percent";
+
+struct Methods {
+    static let getSignIn = "getSignIn"
+    static let showLeaderboard = "showLeaderboard"
+    static let submitScore = "submitScore"
+    static let showAchievements = "showAchievements"
+    static let unlockAchievement =  "unlockAchievement"
+    static let setPercentAchievement = "setPercentAchievement"
+  }
+
 
 public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
 // view controller
@@ -12,29 +31,29 @@ public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
-            case "getSignIn":
+            case Methods.getSignIn:
                 signInUser(result:result)
-            case "showLeaderboard":
+            case Methods.showLeaderboard:
                 let args = call.arguments as! [String:String]
-                let id = args ["id"]!
+                let id = args [ID]!
                  showLeaderboard(id:id,result:result)
-            case "submitScore":
+            case Methods.submitScore:
                 let args = call.arguments as! [String:Any]
-                 let id = args ["id"] as! String
-                 let score = args["score"] as! Int64
+                 let id = args [ID] as! String
+                 let score = args[SCORE] as! Int64
                  submitScore(id:id, score:score, result:result )
-            case "showAchievements":showAchievements(result:result)
-            case "unlockAchievement":
+            case Methods.showAchievements:showAchievements(result:result)
+            case Methods.unlockAchievement:
                 let args = call.arguments as! [String:String]
-                let id = args ["id"]!
+                let id = args [ID]!
                  unlockAchievement(id:id, result:result)
-            case "setPercentAchievement":
+            case Methods.setPercentAchievement:
                 let args = call.arguments as! [String:Any]
-                let id = args ["id"] as! String
-                let percent = args ["percent"] as! Double
+                let id = args [ID] as! String
+                let percent = args [PERCENT] as! Double
                 setPercentAchievement(id:id, percent:percent, result:result)
             default:
-                result("unimplemented")
+                result(UNIMPLEMENTED)
         }
       }
 
@@ -42,7 +61,7 @@ public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
          let player = GKLocalPlayer.local
         player.authenticateHandler = { vc, error in
           guard error == nil else {
-          let error:[String: Any] = ["response" : "ERROR", "message":"NIL error"]
+          let error:[String: Any] = [RESPONSE : ERROR, MESSAGE : "NIL error"]
            result(error)
             return
           }
@@ -57,12 +76,14 @@ public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
                 playerID = player.playerID
              }
 
-             let results:[String: Any] = ["response" :"SUCCESS","message":"player connect to game center", "id":playerID,
-             "displayName": player.displayName]
+             let results:[String: Any] = [ RESPONSE : SUCCESS,
+                MESSAGE: "player connect to game center",
+                ID :playerID, DISPLAY_NAME:player.displayName]
 
             result(results)
           } else {
-             let error:[String: Any] = ["response" : "ERROR_NOT_SIGN_IN", "message":"player auth failed"]
+             let error:[String: Any] = [RESPONSE : ERROR,
+                 MESSAGE :"player auth failed"]
             result(error)
           }
         }
@@ -74,7 +95,7 @@ public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
         vc.viewState = .leaderboards
         vc.leaderboardIdentifier = id
         viewController.present(vc, animated: true, completion: nil)
-        result("success")
+        result(SUCCESS)
       }
 
       func submitScore(id: String, score: Int64, result:@escaping FlutterResult) {
@@ -85,7 +106,7 @@ public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
             result(error?.localizedDescription ?? "")
             return
           }
-          result("success")
+         result(SUCCESS)
         }
       }
 
@@ -95,7 +116,7 @@ public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
         vc.gameCenterDelegate = self
         vc.viewState = .achievements
         viewController.present(vc, animated: true, completion: nil)
-        result("success")
+        result(SUCCESS)
       }
 
     // UNLOCK
@@ -108,13 +129,12 @@ public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
             result(error?.localizedDescription ?? "")
             return
           }
-          result("success")
+          result(SUCCESS)
         }
       }
 
-    // INCREMENT
-      func setPercentAchievement(id: String, percent: Double,
-      result: @escaping FlutterResult) {
+    // SET PERCENTAGE
+      func setPercentAchievement(id: String, percent: Double, result: @escaping FlutterResult) {
         let achievement = GKAchievement(identifier: id)
         achievement.percentComplete = percent
         achievement.showsCompletionBanner = true
@@ -123,15 +143,15 @@ public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
             result(error?.localizedDescription ?? "")
             return
           }
-          result("success")
+          result(SUCCESS)
         }
       }
 
 
 
    public static func register(with registrar: FlutterPluginRegistrar) {
-       let channel = FlutterMethodChannel(name: "plugin.markhamenterprises.com/game_service_connect", binaryMessenger: registrar.messenger())
-       let instance = SwiftIOSGameCenterPlugin()
+     let channel = FlutterMethodChannel(name: CHANNEL_NAME, binaryMessenger: registrar.messenger())
+     let instance = SwiftIOSGameCenterPlugin()
        registrar.addMethodCallDelegate(instance, channel: channel)
      }
 }
