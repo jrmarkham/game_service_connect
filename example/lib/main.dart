@@ -45,8 +45,7 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Game Services Connect'),
         ),
         body: Center(
-          child: Text('SIGNING ON: ${_results!=null? _results.toString():'not '
-              'connected'}'),
+          child: Text('SIGNING ON: ${_results !=null ? _results.success :'not connected'}'),
 
         ),
       ),

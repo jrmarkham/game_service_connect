@@ -51,7 +51,7 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
   private var googleSignInClient: GoogleSignInClient? = null
   private var achievementClient: AchievementsClient? = null
   private var leaderboardsClient: LeaderboardsClient? = null
-  private var playerID: String? = null
+  private var playerId: String? = null
   private var displayName: String? = null
   private var activityPluginBinding: ActivityPluginBinding? = null
   private var channel: MethodChannel? = null
@@ -72,13 +72,13 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
     val builder = GoogleSignInOptions.Builder(
             GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
     googleSignInClient = GoogleSignIn.getClient(activity, builder.build())
-    googleSignInClient?.silentSignIn()?.addOnCompleteListener { task ->
+    googleSignInClient?.silentSignIn()?.addOnCompleteListener { response ->
       pendingOperation = PendingOperation(Methods.getSignIn, result)
-      if (task.isSuccessful) {
-        val googleSignInAccount = task.result
+      if (response.isSuccessful) {
+        val googleSignInAccount = response.result
         handleSignInResult(googleSignInAccount!!)
       } else {
-        Log.e(ERROR, "signInError", task.exception)
+        Log.e(ERROR, "signInError", response.exception)
         Log.i("ExplicitSignIn", "Trying explicit sign in")
         explicitSignIn()
       }
@@ -104,12 +104,21 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
     gamesClient.setGravityForPopups(Gravity.TOP or Gravity.CENTER_HORIZONTAL)
 
     val playersClient = Games.getPlayersClient(activity!!, googleSignInAccount)
-    playersClient.currentPlayer?.addOnSuccessListener { innerTask ->
-      playerID = innerTask.playerId
-      displayName = innerTask.displayName
-    }
+    playersClient.currentPlayer?.addOnSuccessListener { currentPlayer ->
+      playerId = currentPlayer.playerId
+      displayName = currentPlayer.displayName
 
-    finishPendingOperationWithSuccess()
+      val successMap = mapOf(RESPONSE to SUCCESS,
+              MESSAGE to "player connect to game center",
+              ID to playerId, DISPLAY_NAME to displayName)
+
+      pendingOperation!!.result.success(successMap)
+      pendingOperation = null
+
+    }?.addOnFailureListener {
+      pendingOperation!!.result.error(ERROR, "error fetching player profile", null)
+      pendingOperation = null
+    }
   }
 
   // ACHIEVEMENT METHODS
@@ -210,20 +219,20 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
 
   private class PendingOperation constructor(val method: String, val result: Result)
 
-  private fun finishPendingOperationWithSuccess() {
-    Log.i(pendingOperation!!.method, SUCCESS)
-    if (pendingOperation!!.method == Methods.getSignIn) {
-      val successMap = mapOf(RESPONSE to SUCCESS,
-          MESSAGE to "player connect to game center",
-          ID to playerID, DISPLAY_NAME to displayName)
-
-      pendingOperation!!.result.success(successMap)
-
-    } else {
-      pendingOperation!!.result.success(SUCCESS)
-    }
-    pendingOperation = null
-  }
+//  private fun finishPendingOperationWithSuccess() {
+//    Log.i(pendingOperation!!.method, SUCCESS)
+//    if (pendingOperation!!.method == Methods.getSignIn) {
+//      val successMap = mapOf(RESPONSE to SUCCESS,
+//              MESSAGE to "player connect to game center",
+//              ID to playerID, DISPLAY_NAME to displayName)
+//
+//      pendingOperation!!.result.success(successMap)
+//
+//    } else {
+//      pendingOperation!!.result.success(SUCCESS)
+//    }
+//    pendingOperation = null
+//  }
 
   private fun finishPendingOperationWithError(errorMessage: String) {
     Log.i(pendingOperation!!.method, ERROR)

@@ -43,9 +43,8 @@ class GameServicesConnect {
   /// signIn call make this connection early in your code configuration
   static Future<SignInResult> get signIn async {
     final Map<dynamic, dynamic> _response = await _channel.invokeMethod(Methods.getSignIn);
-    final bool success = _response[_RESPONSE] == _SUCCESS;
 
-    SignInResult result = new SignInResult()..success = success;
+    SignInResult result = new SignInResult()..success = _response[_RESPONSE] == _SUCCESS;
     result.message =  _response[_MESSAGE];
 
     if(result.success) {
@@ -67,10 +66,10 @@ class GameServicesConnect {
   /// ACHIEVEMENTS
   /// show achievements
   static Future<bool> showAchievements() async => await _channel.invokeMethod
-    (Methods.showAchievements) == "success";
+    (Methods.showAchievements) == _SUCCESS;
   /// unlock an achievement ::: id (String)
   static Future<bool> unlockAchievement(String id) async => await _channel.invokeMethod(
-      Methods.unlockAchievement, {'id': id}) == "success";
+      Methods.unlockAchievement, {_ID: id}) == "success";
   /// set percentage for an achievement ::: id (String) && percent (double) 0.01-100.00
   static Future<bool> setPercentAchievement({@required String id, @required double percent}) async {
     return await _channel.invokeMethod(Methods.setPercentAchievement, {_ID: id, _PERCENT: percent}) == _SUCCESS;
