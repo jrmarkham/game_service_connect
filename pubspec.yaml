@@ -2,6 +2,7 @@ name: game_service_connect
 description: A wrapper for iOS Game Center and Google Play Games Services including
   auth and player info, leaderboard and achievements.
 version: 0.0.9
+publish_to: 'none'
 homepage: https://github.com/jrmarkham/game_service_connect
 
 environment:

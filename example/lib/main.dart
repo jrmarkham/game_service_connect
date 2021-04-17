@@ -17,14 +17,14 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    super.initState();
     signIn();
+    super.initState();
+
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
+
   Future<void> signIn() async {
     SignInResult results;
-    // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       results = await GameServicesConnect.signIn;
     } on PlatformException {
@@ -33,7 +33,7 @@ class _MyAppState extends State<MyApp> {
     if (!mounted) return;
 
     setState(() {
-      _results = results;
+      _results = results?? 'error';
     });
   }
 
@@ -42,10 +42,11 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('Game Services Connect'),
         ),
         body: Center(
-          child: Text('Sign On: ${_results!=null? _results.toString():'not connected'}'),
+          child: Text('SIGNING ON: ${_results!=null? _results.toString():'not '
+              'connected'}'),
 
         ),
       ),

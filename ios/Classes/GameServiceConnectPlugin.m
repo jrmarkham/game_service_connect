@@ -10,6 +10,6 @@
 
 @implementation GameServiceConnectPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  [GameServiceConnectPlugin registerWithRegistrar:registrar];
+    [SwiftGameServiceConnectPlugin registerWithRegistrar:registrar];
 }
 @end

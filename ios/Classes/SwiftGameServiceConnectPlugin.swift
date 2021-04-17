@@ -23,7 +23,7 @@ struct Methods {
   }
 
 
-public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
+public class SwiftGameServiceConnectPlugin: NSObject, FlutterPlugin {
 // view controller
   var viewController: UIViewController {
     return UIApplication.shared.keyWindow!.rootViewController!
@@ -151,12 +151,12 @@ public class SwiftIOSGameCenterPlugin: NSObject, FlutterPlugin {
 
    public static func register(with registrar: FlutterPluginRegistrar) {
      let channel = FlutterMethodChannel(name: CHANNEL_NAME, binaryMessenger: registrar.messenger())
-     let instance = SwiftIOSGameCenterPlugin()
+     let instance = SwiftGameServiceConnectPlugin()
        registrar.addMethodCallDelegate(instance, channel: channel)
      }
 }
 
-extension SwiftIOSGameCenterPlugin: GKGameCenterControllerDelegate {
+extension SwiftGameServiceConnectPlugin: GKGameCenterControllerDelegate {
   public func gameCenterViewControllerDidFinish(_ gameCenterViewController: GKGameCenterViewController) {
     viewController.dismiss(animated: true, completion: nil)
   }
