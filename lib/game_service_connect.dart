@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -10,7 +12,6 @@ const String _ID = "id";
 const String _DISPLAY_NAME = "displayName";
 const String _SCORE = "score";
 const String _PERCENT = "percent";
-
 
 class Methods {
   static const String getSignIn = "getSignIn";
@@ -42,15 +43,18 @@ class GameServicesConnect {
 
   /// signIn call make this connection early in your code configuration
   static Future<SignInResult> get signIn async {
-    final Map<dynamic, dynamic> _response = await _channel.invokeMethod(Methods.getSignIn);
+    final Map<dynamic, dynamic> _response =
+        await _channel.invokeMethod(Methods.getSignIn);
 
-    SignInResult result = new SignInResult()..success = _response[_RESPONSE] == _SUCCESS;
-    result.message =  _response[_MESSAGE];
+    SignInResult result = new SignInResult()
+      ..success = _response[_RESPONSE] == _SUCCESS;
+    result.message = _response[_MESSAGE];
 
-    if(result.success) {
-      result.account = Account ()
+    if (result.success) {
+      result.account = Account()
         ..id = _response[_ID]
         ..displayName = _response[_DISPLAY_NAME];
+
       /// TO DO ADD IMAGE CONNECTION
     }
     return result;
@@ -58,20 +62,29 @@ class GameServicesConnect {
 
   /// LEADERBOARD
   /// show leaderboard must specify a particular leaderboard by id (String)
-  static Future<bool> showLeaderboard(String id) async => await _channel
-      .invokeMethod(Methods.showLeaderboard, {_ID: id}) == _SUCCESS;
+  static Future<bool> showLeaderboard(String id) async =>
+      await _channel.invokeMethod(Methods.showLeaderboard, {_ID: id}) ==  _SUCCESS;
+
   /// submit leaderboard score ::: id (String) && score (int)
-  static Future<bool> submitScore({@required String id, @required int score}) async => await _channel.invokeMethod(Methods.submitScore, {_ID: id, _SCORE: score}) ==  _SUCCESS;
+  static Future<bool> submitScore(
+          {@required String id, @required int score}) async =>
+      await _channel.invokeMethod(Methods.submitScore,
+          {_ID: id, _SCORE: score}) ==  _SUCCESS;
 
   /// ACHIEVEMENTS
   /// show achievements
-  static Future<bool> showAchievements() async => await _channel.invokeMethod
-    (Methods.showAchievements) == _SUCCESS;
+  static Future<bool> showAchievements() async =>
+      await _channel.invokeMethod(Methods.showAchievements) == _SUCCESS;
+
   /// unlock an achievement ::: id (String)
-  static Future<bool> unlockAchievement(String id) async => await _channel.invokeMethod(
-      Methods.unlockAchievement, {_ID: id}) == "success";
+  static Future<bool> unlockAchievement(String id) async =>
+      await _channel.invokeMethod(Methods.unlockAchievement, {_ID: id})
+          == _SUCCESS;
+
   /// set percentage for an achievement ::: id (String) && percent (double) 0.01-100.00
   static Future<bool> setPercentAchievement({@required String id, @required double percent}) async {
-    return await _channel.invokeMethod(Methods.setPercentAchievement, {_ID: id, _PERCENT: percent}) == _SUCCESS;
+    return await _channel.invokeMethod(Methods.setPercentAchievement,
+        {_ID: id, _PERCENT: Platform.isAndroid ? percent.ceil().toInt() : percent})
+          == _SUCCESS;
   }
 }

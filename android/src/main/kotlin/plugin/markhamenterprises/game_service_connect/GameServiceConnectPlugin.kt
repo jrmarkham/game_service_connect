@@ -35,281 +35,252 @@ private const val SCORE = "score";
 private const val PERCENT = "percent";
 
 private object Methods {
-  const val getSignIn = "getSignIn"
-  const val showLeaderboard = "showLeaderboard"
-  const val submitScore = "submitScore"
-  const val showAchievements = "showAchievements"
-  const val unlockAchievement =  "unlockAchievement"
-  const val setPercentAchievement = "setPercentAchievement"
+    const val getSignIn = "getSignIn"
+    const val showLeaderboard = "showLeaderboard"
+    const val submitScore = "submitScore"
+    const val showAchievements = "showAchievements"
+    const val unlockAchievement = "unlockAchievement"
+    const val setPercentAchievement = "setPercentAchievement"
 }
 
 class GameServiceConnectPlugin(private var activity: Activity? = null) : FlutterPlugin, MethodCallHandler, ActivityAware, ActivityResultListener {
-  /// The MethodChannel that will the communication between Flutter and native Android
-  ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-  /// when the Flutter Engine is detached from the Activity
-  private var googleSignInClient: GoogleSignInClient? = null
-  private var achievementClient: AchievementsClient? = null
-  private var leaderboardsClient: LeaderboardsClient? = null
-  private var playerId: String? = null
-  private var displayName: String? = null
-  private var activityPluginBinding: ActivityPluginBinding? = null
-  private var channel: MethodChannel? = null
-  private var pendingOperation: PendingOperation? = null
+    /// The MethodChannel that will the communication between Flutter and native Android
+    ///
+    /// This local reference serves to register the plugin with the Flutter Engine and unregister it
+    /// when the Flutter Engine is detached from the Activity
+    private var googleSignInClient: GoogleSignInClient? = null
+    private var achievementClient: AchievementsClient? = null
+    private var leaderboardsClient: LeaderboardsClient? = null
+    private var activityPluginBinding: ActivityPluginBinding? = null
+    private var channel: MethodChannel? = null
+    private var pendingOperation: PendingOperation? = null
 
-  companion object {
-    @JvmStatic
-    fun registerWith(registrar: PluginRegistry.Registrar) {
-      val channel = MethodChannel(registrar.messenger(), CHANNEL_NAME)
-      val plugin = GameServiceConnectPlugin(registrar.activity())
-      channel.setMethodCallHandler(plugin)
-      registrar.addActivityResultListener(plugin)
-    }
-  }
-
-  private fun getSignIn(result: Result) {
-    val activity = activity ?: return
-    val builder = GoogleSignInOptions.Builder(
-            GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
-    googleSignInClient = GoogleSignIn.getClient(activity, builder.build())
-    googleSignInClient?.silentSignIn()?.addOnCompleteListener { response ->
-      pendingOperation = PendingOperation(Methods.getSignIn, result)
-      if (response.isSuccessful) {
-        val googleSignInAccount = response.result
-        handleSignInResult(googleSignInAccount!!)
-      } else {
-        Log.e(ERROR, "signInError", response.exception)
-        Log.i("ExplicitSignIn", "Trying explicit sign in")
-        explicitSignIn()
-      }
-    }
-  }
-
-  private fun explicitSignIn() {
-    val activity = activity ?: return
-    val builder = GoogleSignInOptions.Builder(
-            GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
-            .requestEmail()
-    googleSignInClient = GoogleSignIn.getClient(activity, builder.build())
-    activity.startActivityForResult(googleSignInClient?.signInIntent, RC_SIGN_IN)
-  }
-
-  private fun handleSignInResult(googleSignInAccount: GoogleSignInAccount) {
-    val activity = this.activity!!
-    achievementClient = Games.getAchievementsClient(activity, googleSignInAccount)
-    leaderboardsClient = Games.getLeaderboardsClient(activity, googleSignInAccount)
-
-    val gamesClient = Games.getGamesClient(activity, GoogleSignIn.getLastSignedInAccount(activity)!!)
-    gamesClient.setViewForPopups(activity.findViewById(android.R.id.content))
-    gamesClient.setGravityForPopups(Gravity.TOP or Gravity.CENTER_HORIZONTAL)
-
-    val playersClient = Games.getPlayersClient(activity!!, googleSignInAccount)
-    playersClient.currentPlayer?.addOnSuccessListener { currentPlayer ->
-      playerId = currentPlayer.playerId
-      displayName = currentPlayer.displayName
-
-      val successMap = mapOf(RESPONSE to SUCCESS,
-              MESSAGE to "player connect to game center",
-              ID to playerId, DISPLAY_NAME to displayName)
-
-      pendingOperation!!.result.success(successMap)
-      pendingOperation = null
-
-    }?.addOnFailureListener {
-      pendingOperation!!.result.error(ERROR, "error fetching player profile", null)
-      pendingOperation = null
-    }
-  }
-
-  // ACHIEVEMENT METHODS
-  private fun showAchievements(result: Result) {
-    showLoginErrorIfNotLoggedIn(result)
-    achievementClient!!.achievementsIntent.addOnSuccessListener { intent ->
-      activity?.startActivityForResult(intent, 0)
-      result.success(SUCCESS)
-    }.addOnFailureListener {
-      result.error(ERROR, "${it.message}", null)
-    }
-  }
-
-  private fun unlockAchievement(achievementID: String, result: Result) {
-    showLoginErrorIfNotLoggedIn(result)
-    achievementClient?.unlockImmediate(achievementID)?.addOnSuccessListener {
-      result.success(SUCCESS)
-    }?.addOnFailureListener {
-      result.error(ERROR, it.localizedMessage, null)
-    }
-  }
-
-  private fun setPercentAchievement(achievementID: String, percent: Int, result: Result) {
-    showLoginErrorIfNotLoggedIn(result)
-    achievementClient?.setStepsImmediate(achievementID, percent)
-            ?.addOnSuccessListener {
-              result.success(SUCCESS)
-            }?.addOnFailureListener {
-              result.error(ERROR, it.localizedMessage, null)
-            }
-  }
-
-  private fun showLeaderboards(result: Result) {
-    showLoginErrorIfNotLoggedIn(result)
-    leaderboardsClient!!.allLeaderboardsIntent.addOnSuccessListener { intent ->
-      activity?.startActivityForResult(intent, 0)
-      result.success(SUCCESS)
-    }.addOnFailureListener {
-      result.error(ERROR, "${it.message}", null)
-    }
-  }
-
-  private fun submitScore(leaderboardID: String, score: Int, result: Result) {
-    showLoginErrorIfNotLoggedIn(result)
-    leaderboardsClient?.submitScoreImmediate(leaderboardID, score.toLong())?.addOnSuccessListener {
-      result.success(SUCCESS)
-    }?.addOnFailureListener {
-      result.error(ERROR, it.localizedMessage, null)
-    }
-  }
-
-  private fun showLoginErrorIfNotLoggedIn(result: Result) {
-    if (achievementClient == null || leaderboardsClient == null) {
-      result.error(ERROR, "Please make sure to call signIn() first", null)
-    }
-  }
-
-  override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-    setupChannel(binding.binaryMessenger)
-  }
-
-  override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-    teardownChannel()
-  }
-
-  private fun setupChannel(messenger: BinaryMessenger) {
-    channel = MethodChannel(messenger, CHANNEL_NAME)
-    channel?.setMethodCallHandler(this)
-  }
-
-  private fun teardownChannel() {
-    channel?.setMethodCallHandler(null)
-    channel = null
-  }
-
-  private fun disposeActivity() {
-    activityPluginBinding?.removeActivityResultListener(this)
-    activityPluginBinding = null
-  }
-
-  override fun onDetachedFromActivity() {
-    disposeActivity()
-  }
-
-  override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-    onAttachedToActivity(binding)
-  }
-
-  override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-    activityPluginBinding = binding
-    activity = binding.activity
-    binding.addActivityResultListener(this)
-  }
-
-  override fun onDetachedFromActivityForConfigChanges() {
-    onDetachedFromActivity()
-  }
-
-  private class PendingOperation constructor(val method: String, val result: Result)
-
-//  private fun finishPendingOperationWithSuccess() {
-//    Log.i(pendingOperation!!.method, SUCCESS)
-//    if (pendingOperation!!.method == Methods.getSignIn) {
-//      val successMap = mapOf(RESPONSE to SUCCESS,
-//              MESSAGE to "player connect to game center",
-//              ID to playerID, DISPLAY_NAME to displayName)
-//
-//      pendingOperation!!.result.success(successMap)
-//
-//    } else {
-//      pendingOperation!!.result.success(SUCCESS)
-//    }
-//    pendingOperation = null
-//  }
-
-  private fun finishPendingOperationWithError(errorMessage: String) {
-    Log.i(pendingOperation!!.method, ERROR)
-    pendingOperation!!.result.error(ERROR, errorMessage, null)
-    pendingOperation = null
-  }
-
-  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-    if (requestCode == RC_SIGN_IN) {
-      val result = Auth.GoogleSignInApi.getSignInResultFromIntent(data)
-      val signInAccount = result?.signInAccount
-      if (result?.isSuccess == true && signInAccount != null) {
-        handleSignInResult(signInAccount)
-      } else {
-        var message = result?.status?.statusMessage ?: ""
-        if (message.isEmpty()) {
-          message = "Something went wrong " + result?.status
+    companion object {
+        @JvmStatic
+        fun registerWith(registrar: PluginRegistry.Registrar) {
+            val channel = MethodChannel(registrar.messenger(), CHANNEL_NAME)
+            val plugin = GameServiceConnectPlugin(registrar.activity())
+            channel.setMethodCallHandler(plugin)
+            registrar.addActivityResultListener(plugin)
         }
-        finishPendingOperationWithError(message)
-      }
-      return true
     }
-    return false
-  }
-  //endregion
 
-  //region MethodCallHandler
-  override fun onMethodCall(call: MethodCall, result: Result) {
-    when (call.method) {
-
-      Methods.getSignIn -> {
-        getSignIn(result)
-      }
-
-      Methods.showLeaderboard -> {
-        showLeaderboards(result)
-      }
-
-      Methods.submitScore -> {
-        val leaderboardID = call.argument<String>(ID) ?: ""
-        val score = call.argument<Int>(SCORE) ?: 0
-        submitScore(leaderboardID, score, result)
-      }
-
-      Methods.showAchievements -> {
-        showAchievements(result)
-      }
-
-      Methods.unlockAchievement  -> {
-        val achievementId = call.argument<String>(ID) ?: ""
-        unlockAchievement(achievementId, result)
-      }
-
-      Methods.setPercentAchievement -> {
-        val achievementId = call.argument<String>(ID) ?: ""
-        val percent = call.argument<Int>(PERCENT) ?: 0
-        setPercentAchievement(achievementId, percent, result)
-      }
-
-      else -> result.notImplemented()
+    private fun getSignIn(result: Result) {
+        val activity = activity ?: return
+        val builder = GoogleSignInOptions.Builder(
+                GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
+        googleSignInClient = GoogleSignIn.getClient(activity, builder.build())
+        googleSignInClient?.silentSignIn()?.addOnCompleteListener { response ->
+            pendingOperation = PendingOperation(Methods.getSignIn, result)
+            if (response.isSuccessful) {
+                val googleSignInAccount = response.result
+                handleSignInResult(googleSignInAccount!!)
+            } else {
+                Log.e(ERROR, "signInError", response.exception)
+                Log.i("ExplicitSignIn", "Trying explicit sign in")
+                explicitSignIn()
+            }
+        }
     }
-  }
+
+    private fun explicitSignIn() {
+        val activity = activity ?: return
+        val builder = GoogleSignInOptions.Builder(
+                GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
+                .requestEmail()
+        googleSignInClient = GoogleSignIn.getClient(activity, builder.build())
+        activity.startActivityForResult(googleSignInClient?.signInIntent, RC_SIGN_IN)
+    }
+
+    private fun handleSignInResult(googleSignInAccount: GoogleSignInAccount) {
+        val activity = this.activity!!
+        achievementClient = Games.getAchievementsClient(activity, googleSignInAccount)
+        leaderboardsClient = Games.getLeaderboardsClient(activity, googleSignInAccount)
+
+        val gamesClient = Games.getGamesClient(activity, GoogleSignIn.getLastSignedInAccount(activity)!!)
+        gamesClient.setViewForPopups(activity.findViewById(android.R.id.content))
+        gamesClient.setGravityForPopups(Gravity.TOP or Gravity.CENTER_HORIZONTAL)
+
+        val playersClient = Games.getPlayersClient(activity!!, googleSignInAccount)
+        playersClient.currentPlayer?.addOnSuccessListener { currentPlayer ->
+            val successMap = mapOf(RESPONSE to SUCCESS,
+                    MESSAGE to "player connect to game center",
+                    ID to currentPlayer.playerId, DISPLAY_NAME to currentPlayer.displayName)
+
+            pendingOperation!!.result.success(successMap)
+            pendingOperation = null
+
+        }?.addOnFailureListener {
+            pendingOperation!!.result.error(ERROR, "error fetching player profile", null)
+            pendingOperation = null
+        }
+    }
+
+    // ACHIEVEMENT METHODS
+    private fun showAchievements(result: Result) {
+        showLoginErrorIfNotLoggedIn(result)
+        achievementClient!!.achievementsIntent.addOnSuccessListener { intent ->
+            activity?.startActivityForResult(intent, 0)
+            result.success(SUCCESS)
+        }.addOnFailureListener {
+            result.success(ERROR)
+        }
+    }
+
+    private fun unlockAchievement(achievementID: String, result: Result) {
+        showLoginErrorIfNotLoggedIn(result)
+        achievementClient!!.unlockImmediate(achievementID).addOnSuccessListener {
+            result.success(SUCCESS)
+        }.addOnFailureListener {
+            Log.e(ERROR, "Could not unlock achievement", null)
+            result.success(ERROR)
+        }
+    }
+
+    private fun setPercentAchievement(achievementID: String, percent: Int, result: Result) {
+        showLoginErrorIfNotLoggedIn(result)
+        achievementClient!!.setStepsImmediate(achievementID, percent)
+          .addOnSuccessListener {
+              result.success(SUCCESS)
+          }.addOnFailureListener {
+              Log.e(ERROR, "Could not submit score", null)
+              result.success(ERROR)
+          }
+    }
+
+    private fun showLeaderboards(result: Result) {
+        showLoginErrorIfNotLoggedIn(result)
+        leaderboardsClient!!.allLeaderboardsIntent.addOnSuccessListener { intent ->
+            activity?.startActivityForResult(intent, 0)
+            result.success(SUCCESS)
+        }.addOnFailureListener {
+            Log.e(ERROR, "Could not show leader boarder", null)
+            result.success(ERROR)
+        }
+    }
+
+    private fun submitScore(leaderboardID: String, score: Long, result: Result) {
+        showLoginErrorIfNotLoggedIn(result)
+        leaderboardsClient!!.submitScoreImmediate(leaderboardID, score)
+                .addOnSuccessListener {
+                    result.success(SUCCESS)
+                }.addOnFailureListener {
+                    Log.e(ERROR, "Could not submit score", null)
+                    result.success(ERROR)
+                }
+    }
+
+    private fun showLoginErrorIfNotLoggedIn(result: Result) {
+        if (achievementClient == null || leaderboardsClient == null) {
+            result.success(ERROR)
+        }
+    }
+
+    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        setupChannel(binding.binaryMessenger)
+    }
+
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        teardownChannel()
+    }
+
+    private fun setupChannel(messenger: BinaryMessenger) {
+        channel = MethodChannel(messenger, CHANNEL_NAME)
+        channel?.setMethodCallHandler(this)
+    }
+
+    private fun teardownChannel() {
+        channel?.setMethodCallHandler(null)
+        channel = null
+    }
+
+    private fun disposeActivity() {
+        activityPluginBinding?.removeActivityResultListener(this)
+        activityPluginBinding = null
+    }
+
+    override fun onDetachedFromActivity() {
+        disposeActivity()
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        onAttachedToActivity(binding)
+    }
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        activityPluginBinding = binding
+        activity = binding.activity
+        binding.addActivityResultListener(this)
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        onDetachedFromActivity()
+    }
+
+    private class PendingOperation constructor(val method: String, val result: Result)
+
+    private fun finishPendingOperationWithError(errorMessage: String) {
+        Log.i(pendingOperation!!.method, ERROR)
+        pendingOperation!!.result.error(ERROR, errorMessage, null)
+        pendingOperation = null
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
+        if (requestCode == RC_SIGN_IN) {
+            val result = Auth.GoogleSignInApi.getSignInResultFromIntent(data)
+            val signInAccount = result?.signInAccount
+            if (result?.isSuccess == true && signInAccount != null) {
+                handleSignInResult(signInAccount)
+            } else {
+                var message = result?.status?.statusMessage ?: ""
+                if (message.isEmpty()) {
+                    message = "Something went wrong " + result?.status
+                }
+                finishPendingOperationWithError(message)
+            }
+            return true
+        }
+        return false
+    }
+    //endregion
+
+    //region MethodCallHandler
+    override fun onMethodCall(call: MethodCall, result: Result) {
+        when (call.method) {
+
+            Methods.getSignIn -> {
+                getSignIn(result)
+            }
+
+            Methods.showLeaderboard -> {
+                showLeaderboards(result)
+            }
+
+            Methods.submitScore -> {
+                val leaderboardID = call.argument<String>(ID) ?: ""
+                val score = call.argument<Int>(SCORE) ?: 0
+                submitScore(leaderboardID, score.toLong(), result)
+            }
+
+            Methods.showAchievements -> {
+                showAchievements(result)
+            }
+
+            Methods.unlockAchievement -> {
+                val achievementId = call.argument<String>(ID) ?: ""
+                unlockAchievement(achievementId, result)
+            }
+
+            Methods.setPercentAchievement -> {
+                val achievementId = call.argument<String>(ID) ?: ""
+                val percent = call.argument<Int>(PERCENT) ?: 0
+                setPercentAchievement(achievementId, percent, result)
+            }
+
+            else -> result.notImplemented()
+        }
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 //
@@ -355,11 +326,6 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
 //  const val setPercentAchievement = "setPercentAchievement"
 //}
 //
-
-
-
-
-
 
 
 /** GameServiceConnectPlugin */
@@ -524,8 +490,6 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
 //    return false
 //  }
 //}
-
-
 
 
 //class GameServiceConnectPlugin(private var activity: Activity? = null) : FlutterPlugin, MethodCallHandler, ActivityAware, ActivityResultListener {
