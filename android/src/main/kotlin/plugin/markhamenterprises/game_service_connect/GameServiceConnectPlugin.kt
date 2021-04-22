@@ -173,7 +173,7 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
 
   private fun showLoginErrorIfNotLoggedIn(result: Result) {
     if (achievementClient == null || leaderboardsClient == null) {
-      result.sucess("Please make sure to call signIn() first")
+      result.success("Please make sure to call signIn() first")
     }
   }
 

@@ -62,8 +62,17 @@ class GameServicesConnect {
 
   /// LEADERBOARD
   /// show leaderboard must specify a particular leaderboard by id (String)
-  static Future<bool> showLeaderboard(String id) async =>
-      await _channel.invokeMethod(Methods.showLeaderboard, {_ID: id}) ==  _SUCCESS;
+  static Future<bool> showLeaderboard(String id)  async  {
+    try {
+      final String response = await _channel.invokeMethod(Methods.showLeaderboard, {_ID: id});
+      if (response ==  _SUCCESS) return true;
+      debugPrint ('showLeaderboard error ::::  ${response.toString()}');
+    }catch (e) {
+      debugPrint ('showLeaderboard error ::::  ${e.toString()}');
+      return false;
+    }
+    return false;
+  }
 
   /// submit leaderboard score ::: id (String) && score (int)
   static Future<bool> submitScore({@required String id, @required int score})
@@ -82,18 +91,44 @@ class GameServicesConnect {
 
   /// ACHIEVEMENTS
   /// show achievements
-  static Future<bool> showAchievements() async =>
-      await _channel.invokeMethod(Methods.showAchievements) == _SUCCESS;
+  static Future<bool> showAchievements() async {
+    try {
+      final String response = await _channel.invokeMethod(Methods.showAchievements);
+      if (response ==  _SUCCESS) return true;
+      debugPrint ('showAchievements error ::::  ${response.toString()}');
+    }catch (e) {
+      debugPrint ('showAchievements error ::::  ${e.toString()}');
+      return false;
+    }
+    return false;
+  }
+
 
   /// unlock an achievement ::: id (String)
-  static Future<bool> unlockAchievement(String id) async =>
-      await _channel.invokeMethod(Methods.unlockAchievement, {_ID: id})
-          == _SUCCESS;
+  static Future<bool> unlockAchievement(String id) async {
+    try {
+      final String response = await _channel.invokeMethod(Methods.unlockAchievement, {_ID: id});
+      if (response ==  _SUCCESS) return true;
+      debugPrint ('unlockAchievement error ::::  ${response.toString()}');
+    }catch (e) {
+      debugPrint ('unlockAchievement error ::::  ${e.toString()}');
+      return false;
+    }
+    return false;
+  }
+
 
   /// set percentage for an achievement ::: id (String) && percent (double) 0.01-100.00
   static Future<bool> setPercentAchievement({@required String id, @required double percent}) async {
-    return await _channel.invokeMethod(Methods.setPercentAchievement,
-        {_ID: id, _PERCENT: Platform.isAndroid ? percent.ceil().toInt() : percent})
-          == _SUCCESS;
+    try {
+      final String response = await _channel.invokeMethod(Methods.setPercentAchievement,
+          {_ID: id, _PERCENT: Platform.isAndroid ? percent.ceil().toInt() : percent});
+      if (response ==  _SUCCESS) return true;
+      debugPrint ('setPercentAchievement error ::::  ${response.toString()}');
+    }catch (e) {
+      debugPrint ('setPercentAchievement error ::::  ${e.toString()}');
+      return false;
+    }
+    return false;
   }
 }
