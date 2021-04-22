@@ -66,10 +66,19 @@ class GameServicesConnect {
       await _channel.invokeMethod(Methods.showLeaderboard, {_ID: id}) ==  _SUCCESS;
 
   /// submit leaderboard score ::: id (String) && score (int)
-  static Future<bool> submitScore(
-          {@required String id, @required int score}) async =>
-      await _channel.invokeMethod(Methods.submitScore,
-          {_ID: id, _SCORE: score}) ==  _SUCCESS;
+  static Future<bool> submitScore({@required String id, @required int score})
+  async  {
+    try {
+      final String response = await _channel.invokeMethod(Methods.submitScore, {_ID: id, _SCORE: score});
+      if (response ==  _SUCCESS) return true;
+      debugPrint ('submitScore error ::::  ${response.toString()}');
+    }catch (e) {
+      debugPrint ('submitScore error ::::  ${e.toString()}');
+      return false;
+    }
+    return false;
+  }
+
 
   /// ACHIEVEMENTS
   /// show achievements
