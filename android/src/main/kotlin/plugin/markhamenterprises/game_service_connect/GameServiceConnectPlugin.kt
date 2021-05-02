@@ -49,6 +49,7 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
   private var googleSignInClient: GoogleSignInClient? = null
+  private var googleSignInAccount: GoogleSignInAccount? = null
   private var achievementClient: AchievementsClient? = null
   private var leaderboardsClient: LeaderboardsClient? = null
   private var activityPluginBinding: ActivityPluginBinding? = null
@@ -73,7 +74,7 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
     googleSignInClient?.silentSignIn()?.addOnCompleteListener { response ->
       pendingOperation = PendingOperation(Methods.getSignIn, result)
       if (response.isSuccessful) {
-        val googleSignInAccount = response.result
+        googleSignInAccount = response.result
         handleSignInResult(googleSignInAccount!!)
       } else {
         Log.e(ERROR, "signInError", response.exception)
@@ -130,23 +131,51 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
 
   private fun unlockAchievement(achievementID: String, result: Result) {
     showLoginErrorIfNotLoggedIn(result)
-    achievementClient!!.unlockImmediate(achievementID).addOnSuccessListener{
-           result.success(SUCCESS)
-        }.addOnFailureListener {
-          Log.e(ERROR, "Could not unlock achievement", null)
-      result.success("Could not unlock achievement")
-        }
+
+    if(googleSignInAccount != null) {
+      Games.getAchievementsClient(activity!!, googleSignInAccount!!).unlockImmediate(achievementID)
+      result.success(SUCCESS)
+      return
+    }
+    Log.e(ERROR, "Could not unlock achievement", null)
+    result.success("Could not unlock achievement")
+
+
+
+//    achievementClient!!.unlockImmediate(achievementID).addOnSuccessListener{
+//           result.success(SUCCESS)
+//        }.addOnFailureListener {
+//          Log.e(ERROR, "Could not unlock achievement", null)
+//      result.success("Could not  achievement")
+//        }
   }
 
   private fun setPercentAchievement(achievementID: String, percent: Int, result: Result) {
     showLoginErrorIfNotLoggedIn(result)
-    achievementClient!!.setStepsImmediate(achievementID, percent)
-    .addOnSuccessListener {
+
+
+    /*
+    Games.getAchievementsClient(activity, googleSignInAccount)
+     */
+
+
+    if(googleSignInAccount != null) {
+      Games.getAchievementsClient(activity!!, googleSignInAccount!!).setStepsImmediate(achievementID, percent)
       result.success(SUCCESS)
-    }.addOnFailureListener {
-      Log.e(ERROR, "Could not update achievement", null)
-      result.success("Could not update achievement")
+      return
     }
+    Log.e(ERROR, "Could not update achievement", null)
+    result.success("Could not update achievement")
+
+
+
+//    achievementClient!!.setStepsImmediate(achievementID, percent)
+//    .addOnSuccessListener {
+//      result.success(SUCCESS)
+//    }.addOnFailureListener {
+//      Log.e(ERROR, "Could not update achievement", null)
+//      result.success("Could not update achievement")
+//    }
   }
 
   private fun showLeaderboards(result: Result) {
@@ -162,13 +191,14 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
 
   private fun submitScore(leaderboardID: String, score: Long, result: Result) {
     showLoginErrorIfNotLoggedIn(result)
-    leaderboardsClient!!.submitScoreImmediate(leaderboardID, score)
-      .addOnSuccessListener {
-        result.success(SUCCESS)
-      }.addOnFailureListener {
-          Log.e(ERROR, "Could not submit score", null)
-          result.success("Could not submit score")
-      }
+
+    if(googleSignInAccount != null) {
+      Games.getLeaderboardsClient(activity!!, googleSignInAccount!!).submitScore(leaderboardID, score)
+      result.success(SUCCESS)
+      return
+    }
+     Log.e(ERROR, "Could not submit score", null)
+     result.success("Could not submit score")
   }
 
   private fun showLoginErrorIfNotLoggedIn(result: Result) {
