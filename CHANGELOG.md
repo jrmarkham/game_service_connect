@@ -14,3 +14,8 @@
 * Kotlin stubs.
 ## 0.0.8
 * Kotlin stubs fixes.
+## 0.0.10
+* Fixed posting leadboard score on android
+* Fixed set perecentage on achievemnts on android
+## 0.0.11
+* Update to Null Saftey

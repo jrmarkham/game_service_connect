@@ -25,15 +25,15 @@ class Methods {
 /// Account Object contains id and display name
 /// todo :: add image access
 class Account {
-  String id;
-  String displayName;
+  late String id;
+  late String displayName;
 }
 
 /// Sign In Object::
 class SignInResult {
-  Account account;
-  String message;
-  bool success;
+  late Account account;
+  late String message;
+  late bool success;
 }
 
 /// Plugin Class for Game Center And Google :::
@@ -75,7 +75,7 @@ class GameServicesConnect {
   }
 
   /// submit leaderboard score ::: id (String) && score (int)
-  static Future<bool> submitScore({@required String id, @required int score})
+  static Future<bool> submitScore({required String id, required int score})
   async  {
     try {
       final String response = await _channel.invokeMethod(Methods.submitScore, {_ID: id, _SCORE: score});
@@ -119,7 +119,7 @@ class GameServicesConnect {
 
 
   /// set percentage for an achievement ::: id (String) && percent (double) 0.01-100.00
-  static Future<bool> setPercentAchievement({@required String id, @required double percent}) async {
+  static Future<bool> setPercentAchievement({required String id, required double percent}) async {
     try {
       final String response = await _channel.invokeMethod(Methods.setPercentAchievement,
           {_ID: id, _PERCENT: Platform.isAndroid ? percent.ceil().toInt() : percent});
