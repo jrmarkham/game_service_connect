@@ -1,8 +1,6 @@
 # game_service_connect
 A wrapper for iOS Game Center and Google Play Games Services including auth and player info, leaderboard and achievements.
 
-## NOTE: Android Functions in development
-
 ## Part 1: Sign In
 The sign in is a method, and the return is an object that contains a success boolean and player data if successful. The return is a Future.
 
