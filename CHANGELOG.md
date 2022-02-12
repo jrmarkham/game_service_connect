@@ -19,3 +19,7 @@
 * Fixed set perecentage on achievemnts on android
 ## 0.0.11
 * Update to Null Saftey
+## 0.0.12
+* Update game services for android: 
+  * 'com.google.android.gms:play-services-games:22.0.1'
+  * 'com.google.android.gms:play-services-auth:20.1.0'
