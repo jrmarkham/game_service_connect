@@ -45,7 +45,7 @@ private object Methods {
 
 class GameServiceConnectPlugin(private var activity: Activity? = null) : FlutterPlugin, MethodCallHandler, ActivityAware, ActivityResultListener {
   /// The MethodChannel that will the communication between Flutter and native Android
-  ///
+
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
   private var googleSignInClient: GoogleSignInClient? = null
@@ -139,25 +139,10 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
     }
     Log.e(ERROR, "Could not unlock achievement", null)
     result.success("Could not unlock achievement")
-
-
-
-//    achievementClient!!.unlockImmediate(achievementID).addOnSuccessListener{
-//           result.success(SUCCESS)
-//        }.addOnFailureListener {
-//          Log.e(ERROR, "Could not unlock achievement", null)
-//      result.success("Could not  achievement")
-//        }
   }
 
   private fun setPercentAchievement(achievementID: String, percent: Int, result: Result) {
     showLoginErrorIfNotLoggedIn(result)
-
-
-    /*
-    Games.getAchievementsClient(activity, googleSignInAccount)
-     */
-
 
     if(googleSignInAccount != null) {
       Games.getAchievementsClient(activity!!, googleSignInAccount!!).setStepsImmediate(achievementID, percent)
@@ -167,15 +152,6 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
     Log.e(ERROR, "Could not update achievement", null)
     result.success("Could not update achievement")
 
-
-
-//    achievementClient!!.setStepsImmediate(achievementID, percent)
-//    .addOnSuccessListener {
-//      result.success(SUCCESS)
-//    }.addOnFailureListener {
-//      Log.e(ERROR, "Could not update achievement", null)
-//      result.success("Could not update achievement")
-//    }
   }
 
   private fun showLeaderboards(result: Result) {

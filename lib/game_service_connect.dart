@@ -23,7 +23,7 @@ class Methods {
 }
 
 /// Account Object contains id and display name
-/// todo :: add image access
+/// TODO::: add image access
 class Account {
   late String id;
   late String displayName;
@@ -66,7 +66,6 @@ class GameServicesConnect {
     try {
       final String response = await _channel.invokeMethod(Methods.showLeaderboard, {_ID: id});
       if (response ==  _SUCCESS) return true;
-      debugPrint ('showLeaderboard error ::::  ${response.toString()}');
     }catch (e) {
       debugPrint ('showLeaderboard error ::::  ${e.toString()}');
       return false;
@@ -79,8 +78,7 @@ class GameServicesConnect {
   async  {
     try {
       final String response = await _channel.invokeMethod(Methods.submitScore, {_ID: id, _SCORE: score});
-      if (response ==  _SUCCESS) return true;
-      debugPrint ('submitScore error ::::  ${response.toString()}');
+      if (response ==  _SUCCESS) return true;;
     }catch (e) {
       debugPrint ('submitScore error ::::  ${e.toString()}');
       return false;
@@ -95,7 +93,6 @@ class GameServicesConnect {
     try {
       final String response = await _channel.invokeMethod(Methods.showAchievements);
       if (response ==  _SUCCESS) return true;
-      debugPrint ('showAchievements error ::::  ${response.toString()}');
     }catch (e) {
       debugPrint ('showAchievements error ::::  ${e.toString()}');
       return false;
@@ -109,7 +106,6 @@ class GameServicesConnect {
     try {
       final String response = await _channel.invokeMethod(Methods.unlockAchievement, {_ID: id});
       if (response ==  _SUCCESS) return true;
-      debugPrint ('unlockAchievement error ::::  ${response.toString()}');
     }catch (e) {
       debugPrint ('unlockAchievement error ::::  ${e.toString()}');
       return false;
@@ -124,7 +120,6 @@ class GameServicesConnect {
       final String response = await _channel.invokeMethod(Methods.setPercentAchievement,
           {_ID: id, _PERCENT: Platform.isAndroid ? percent.ceil().toInt() : percent});
       if (response ==  _SUCCESS) return true;
-      debugPrint ('setPercentAchievement error ::::  ${response.toString()}');
     }catch (e) {
       debugPrint ('setPercentAchievement error ::::  ${e.toString()}');
       return false;
