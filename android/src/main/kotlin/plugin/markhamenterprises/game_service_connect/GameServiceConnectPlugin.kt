@@ -232,7 +232,7 @@ class GameServiceConnectPlugin(private var activity: Activity? = null) : Flutter
     pendingOperation = null
   }
 
-  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
+  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent): Boolean {
     if (requestCode == RC_SIGN_IN) {
       val result = Auth.GoogleSignInApi.getSignInResultFromIntent(data)
       val signInAccount = result?.signInAccount
