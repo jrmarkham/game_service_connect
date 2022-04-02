@@ -19,9 +19,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     signIn();
     super.initState();
-
   }
-
 
   Future<void> signIn() async {
     SignInResult results;
@@ -33,7 +31,7 @@ class _MyAppState extends State<MyApp> {
     if (!mounted) return;
 
     setState(() {
-      _results = results?? 'error';
+      _results = results ?? 'error';
     });
   }
 
@@ -45,8 +43,8 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Game Services Connect'),
         ),
         body: Center(
-          child: Text('SIGNING ON: ${_results !=null ? _results.success :'not connected'}'),
-
+          child: Text(
+              'SIGNING ON: ${_results != null ? _results.success : 'not connected'}'),
         ),
       ),
     );
